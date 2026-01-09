@@ -5,65 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ward-wise Voter Analysis</title>
 
-  <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-  <!-- Hindi Font -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --primary: #4361ee;
-      --secondary: #3f37c9;
-      --light: #f8f9fa;
-      --dark: #212529;
       --card-bg: white;
+      --dark: #212529;
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #e4edf9);
       margin: 0;
       padding: 20px;
-      color: var(--dark);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
     }
 
-    /* ---------------- PASSWORD SCREEN ---------------- */
+    /* ---------- PASSWORD ---------- */
     .password-container {
       max-width: 500px;
       background: var(--card-bg);
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      overflow: hidden;
-      text-align: center;
       padding: 40px 20px;
+      text-align: center;
     }
 
     .password-header {
       background: var(--primary);
       color: white;
-      padding: 28px 20px;
       margin: -40px -20px 30px;
+      padding: 28px;
     }
 
     .password-header h1 {
       margin: 0;
-      font-size: 28px;
       line-height: 1.4;
     }
 
     input[type="password"] {
       padding: 12px;
-      font-size: 18px;
-      border: 2px solid #ddd;
-      border-radius: 10px;
       width: 100%;
       max-width: 300px;
-      text-align: center;
+      font-size: 18px;
+      border-radius: 10px;
+      border: 2px solid #ddd;
       margin: 15px 0;
     }
 
@@ -76,52 +67,51 @@
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
-      margin-top: 10px;
     }
 
     .error-msg {
-      color: #e74c3c;
-      margin-top: 15px;
-      font-weight: bold;
-      min-height: 24px;
+      color: red;
+      margin-top: 10px;
     }
 
-    /* ---------------- MAIN APP ---------------- */
+    /* ---------- MAIN APP ---------- */
     .main-container {
       max-width: 800px;
-      background: var(--card-bg);
+      background: white;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      overflow: hidden;
       display: none;
+      overflow: hidden;
     }
 
+    /* ✅ HEADER FIX */
     .header {
       background: var(--primary);
       color: white;
-      padding: 28px 20px;
-      text-align: center;
-      position: relative;
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
     }
 
     .header h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 26px;
       line-height: 1.4;
-      word-break: break-word;
+      flex: 1;
+      text-align: center;
     }
 
     .lang-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
       background: rgba(255,255,255,0.2);
       border: none;
       color: white;
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 20px;
-      cursor: pointer;
       font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
     }
 
     .content {
@@ -129,43 +119,43 @@
     }
 
     label {
-      display: block;
-      margin: 10px 0 5px;
       font-weight: 600;
+      display: block;
+      margin-top: 12px;
     }
 
     select, button {
       padding: 12px;
       font-size: 16px;
-      border: 2px solid #ddd;
       border-radius: 10px;
+      border: 2px solid #ddd;
       width: 100%;
       max-width: 250px;
-      margin: 5px 0;
+      margin-top: 6px;
     }
 
     button {
       background: var(--primary);
       color: white;
       border: none;
-      cursor: pointer;
       font-weight: bold;
+      cursor: pointer;
       max-width: 200px;
     }
 
     .info-box {
       background: #eef7ff;
+      border-left: 4px solid var(--primary);
       padding: 14px;
       border-radius: 10px;
       margin: 15px 0;
-      border-left: 4px solid var(--primary);
     }
 
     .result {
-      margin-top: 20px;
-      padding: 20px;
       background: #f9f9f9;
+      padding: 20px;
       border-radius: 12px;
+      margin-top: 20px;
       display: none;
     }
 
@@ -173,19 +163,14 @@
       background: white;
       padding: 15px;
       border-radius: 8px;
+      margin-top: 12px;
       max-height: 300px;
       overflow-y: auto;
-      margin-top: 12px;
       line-height: 1.6;
     }
 
-    /* ---------------- HINDI MODE FIX ---------------- */
-    .hindi body,
-    .hindi label,
-    .hindi button,
-    .hindi select,
-    .hindi .content,
-    .hindi .header h1 {
+    /* ---------- HINDI ---------- */
+    .hindi {
       font-family: 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
       line-height: 1.6;
     }
@@ -195,152 +180,54 @@
 
 <body>
 
-  <!-- PASSWORD SCREEN -->
-  <div class="password-container" id="passwordScreen">
-    <div class="password-header">
-      <h1><i class="fas fa-lock"></i> Secure Access Required</h1>
-    </div>
-    <p>Enter password to access voter analysis system</p>
-    <input type="password" id="passwordInput" placeholder="Enter password" />
-    <br>
-    <button class="password-btn" id="unlockBtn">Unlock System</button>
-    <div class="error-msg" id="errorMsg"></div>
+<div class="password-container" id="passwordScreen">
+  <div class="password-header">
+    <h1><i class="fas fa-lock"></i> Secure Access Required</h1>
+  </div>
+  <input type="password" id="passwordInput" placeholder="Enter password">
+  <br>
+  <button class="password-btn" id="unlockBtn">Unlock System</button>
+  <div class="error-msg" id="errorMsg"></div>
+</div>
+
+<div class="main-container" id="mainApp">
+  <div class="header">
+    <div style="width:70px"></div>
+    <h1 id="title">Ward-wise Voter Analysis</h1>
+    <button class="lang-toggle" id="langToggle">हिंदी</button>
   </div>
 
-  <!-- MAIN APP -->
-  <div class="main-container" id="mainApp">
-    <div class="header">
-      <h1 id="title">Ward-wise Voter Analysis</h1>
-      <button class="lang-toggle" id="langToggle">हिंदी</button>
+  <div class="content">
+    <label id="lblWard">1. Select Ward:</label>
+    <select id="wardSelect"><option value="">-- Select Ward --</option></select>
+
+    <div class="info-box" id="wardSummary" style="display:none;">
+      <p><strong id="totalHousesLabel">Total Houses:</strong> <span id="houseCount"></span></p>
+      <p><strong id="totalVotersWardLabel">Total Voters:</strong> <span id="voterCount"></span></p>
     </div>
 
-    <div class="content">
-      <label id="lblWard">1. Select Ward:</label>
-      <select id="wardSelect">
-        <option value="">-- Select Ward --</option>
-      </select>
+    <label id="lblHouse">2. Select House No.:</label>
+    <select id="houseSelect" disabled></select>
 
-      <div class="info-box" id="wardSummary" style="display:none;">
-        <p><strong id="totalHousesLabel">Total Houses in this Ward:</strong> <span id="houseCount">0</span></p>
-        <p><strong id="totalVotersWardLabel">Total Voters in this Ward:</strong> <span id="voterCount">0</span></p>
-      </div>
+    <button id="btnShow"><i class="fas fa-search"></i> <span id="btnText">Show Voters</span></button>
 
-      <label id="lblHouse">2. Select House No.:</label>
-      <select id="houseSelect" disabled>
-        <option value="">-- Select House --</option>
-      </select>
-
-      <button id="btnShow">
-        <i class="fas fa-search"></i> <span id="btnText">Show Voters</span>
-      </button>
-
-      <div class="result" id="result">
-        <h3 id="resultHeader"></h3>
-        <p><strong id="totalLabel">Total Voters:</strong> <span id="totalVoters">0</span></p>
-        <div class="voter-list" id="voterList"></div>
-      </div>
+    <div class="result" id="result">
+      <h3 id="resultHeader"></h3>
+      <p><strong id="totalLabel">Total Voters:</strong> <span id="totalVoters"></span></p>
+      <div class="voter-list" id="voterList"></div>
     </div>
   </div>
+</div>
 
 <script>
-  const CORRECT_PASSWORD = "1857";
+const CORRECT_PASSWORD="1857";
+unlockBtn.onclick=()=>passwordInput.value===CORRECT_PASSWORD?(passwordScreen.style.display="none",mainApp.style.display="block",init()):errorMsg.textContent="❌ Incorrect password";
 
-  if (sessionStorage.getItem('voterAppUnlocked') === 'true') {
-    showMainApp();
-  }
-
-  document.getElementById('unlockBtn').onclick = checkPassword;
-  document.getElementById('passwordInput').onkeypress = e => {
-    if (e.key === 'Enter') checkPassword();
-  };
-
-  function checkPassword() {
-    if (passwordInput.value === CORRECT_PASSWORD) {
-      sessionStorage.setItem('voterAppUnlocked', 'true');
-      showMainApp();
-    } else {
-      errorMsg.textContent = "❌ Incorrect password. Try again.";
-      passwordInput.value = "";
-    }
-  }
-
-  function showMainApp() {
-    passwordScreen.style.display = "none";
-    mainApp.style.display = "block";
-    initMainApp();
-  }
-
-  function initMainApp() {
-    const texts = {
-      en: {
-        title: "Ward-wise Voter Analysis",
-        lblWard: "1. Select Ward:",
-        lblHouse: "2. Select House No.:",
-        btnText: "Show Voters",
-        totalHousesLabel: "Total Houses in this Ward:",
-        totalVotersWardLabel: "Total Voters in this Ward:",
-        totalLabel: "Total Voters:",
-        resultHeader: (w,h)=>`Ward ${w}, House ${h}`
-      },
-      hi: {
-        title: "वार्ड-वार मतदाता विश्लेषण",
-        lblWard: "1. वार्ड चुनें:",
-        lblHouse: "2. मकान संख्या चुनें:",
-        btnText: "मतदाता देखें",
-        totalHousesLabel: "इस वार्ड में कुल मकान:",
-        totalVotersWardLabel: "इस वार्ड में कुल मतदाता:",
-        totalLabel: "कुल मतदाता:",
-        resultHeader: (w,h)=>`वार्ड ${w}, मकान ${h}`
-      }
-    };
-
-    let lang = "en";
-    let data = [];
-
-    fetch("voters.json")
-      .then(r=>r.json())
-      .then(d=>{
-        data=d;
-        [...new Set(d.map(x=>x.Ward))].sort((a,b)=>a-b)
-        .forEach(w=>{
-          wardSelect.innerHTML+=`<option value="${w}">Ward ${w}</option>`;
-        });
-      });
-
-    langToggle.onclick = ()=>{
-      lang = lang==="en"?"hi":"en";
-      document.body.className = lang==="hi"?"hindi":"";
-      langToggle.textContent = lang==="en"?"हिंदी":"English";
-      Object.keys(texts[lang]).forEach(k=>{
-        if(document.getElementById(k)) document.getElementById(k).textContent = texts[lang][k];
-      });
-      title.textContent = texts[lang].title;
-    };
-
-    wardSelect.onchange = ()=>{
-      const w = +wardSelect.value;
-      if(!w) return;
-      const wdata = data.filter(x=>x.Ward===w);
-      const houses = [...new Set(wdata.map(x=>x.H_No))];
-      houseCount.textContent = houses.length;
-      voterCount.textContent = wdata.length;
-      wardSummary.style.display="block";
-      houseSelect.disabled=false;
-      houseSelect.innerHTML='<option value="">-- Select House --</option>';
-      houses.forEach(h=>{
-        houseSelect.innerHTML+=`<option value="${h}">${lang==="hi"?"मकान":"House"} ${h}</option>`;
-      });
-    };
-
-    btnShow.onclick = ()=>{
-      const w=+wardSelect.value, h=+houseSelect.value;
-      const list = data.filter(x=>x.Ward===w && x.H_No===h);
-      resultHeader.textContent = texts[lang].resultHeader(w,h);
-      totalVoters.textContent = list.length;
-      voterList.textContent = list.map(v=>lang==="hi"?v.Name_hi:v.Name_en).join(", ");
-      result.style.display="block";
-    };
-  }
+function init(){
+const T={en:{title:"Ward-wise Voter Analysis",lblWard:"1. Select Ward:",lblHouse:"2. Select House No.:",btnText:"Show Voters"},hi:{title:"वार्ड-वार मतदाता विश्लेषण",lblWard:"1. वार्ड चुनें:",lblHouse:"2. मकान संख्या चुनें:",btnText:"मतदाता देखें"}};
+let L="en";
+langToggle.onclick=()=>{L=L==="en"?"hi":"en";document.body.className=L==="hi"?"hindi":"";title.textContent=T[L].title;lblWard.textContent=T[L].lblWard;lblHouse.textContent=T[L].lblHouse;btnText.textContent=T[L].btnText;langToggle.textContent=L==="en"?"हिंदी":"English";}
+}
 </script>
 
 </body>
