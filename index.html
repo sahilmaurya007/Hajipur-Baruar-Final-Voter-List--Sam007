@@ -1,219 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ward-wise Voter Analysis</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ward-wise Voter Analysis</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <style>
-    :root {
-      --primary: #4361ee;
-      --card-bg: white;
-      --dark: #212529;
-    }
+<style>
+:root{
+  --primary:#4361ee;
+  --card-bg:#fff;
+  --dark:#212529;
+}
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #f5f7fa, #e4edf9);
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+body{
+  margin:0;
+  padding:20px;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#f5f7fa,#e4edf9);
+  font-family:'Segoe UI',sans-serif;
+  color:var(--dark);
+}
 
-    /* ---------- PASSWORD ---------- */
-    .password-container {
-      max-width: 500px;
-      background: var(--card-bg);
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      padding: 40px 20px;
-      text-align: center;
-    }
+/* -------- PASSWORD -------- */
+.password-container{
+  max-width:500px;
+  background:var(--card-bg);
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
+  padding:40px 20px;
+  text-align:center;
+}
 
-    .password-header {
-      background: var(--primary);
-      color: white;
-      margin: -40px -20px 30px;
-      padding: 28px;
-    }
+.password-header{
+  background:var(--primary);
+  color:#fff;
+  margin:-40px -20px 30px;
+  padding:28px;
+}
 
-    .password-header h1 {
-      margin: 0;
-      line-height: 1.4;
-    }
+.password-header h1{
+  margin:0;
+  line-height:1.4;
+}
 
-    input[type="password"] {
-      padding: 12px;
-      width: 100%;
-      max-width: 300px;
-      font-size: 18px;
-      border-radius: 10px;
-      border: 2px solid #ddd;
-      margin: 15px 0;
-    }
+input[type=password]{
+  padding:12px;
+  width:100%;
+  max-width:300px;
+  font-size:18px;
+  border-radius:10px;
+  border:2px solid #ddd;
+  margin:15px 0;
+}
 
-    .password-btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      font-size: 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+.password-btn{
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  padding:12px 30px;
+  font-size:18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
 
-    .error-msg {
-      color: red;
-      margin-top: 10px;
-    }
+.error-msg{
+  margin-top:10px;
+  font-weight:bold;
+  color:#e74c3c;
+}
 
-    /* ---------- MAIN APP ---------- */
-    .main-container {
-      max-width: 800px;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      display: none;
-      overflow: hidden;
-    }
+/* -------- MAIN APP -------- */
+.main-container{
+  max-width:800px;
+  width:100%;
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
+  overflow:hidden;
+  display:none;
+}
 
-    /* ✅ HEADER FIX */
-    .header {
-      background: var(--primary);
-      color: white;
-      padding: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
+/* HEADER FIX (NO OVERLAP) */
+.header{
+  background:var(--primary);
+  color:#fff;
+  padding:22px;
+  display:flex;
+  align-items:center;
+}
 
-    .header h1 {
-      margin: 0;
-      font-size: 26px;
-      line-height: 1.4;
-      flex: 1;
-      text-align: center;
-    }
+.header h1{
+  flex:1;
+  margin:0;
+  text-align:center;
+  font-size:26px;
+  line-height:1.4;
+}
 
-    .lang-toggle {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      white-space: nowrap;
-    }
+.lang-toggle{
+  background:rgba(255,255,255,.2);
+  border:none;
+  color:#fff;
+  padding:6px 14px;
+  border-radius:20px;
+  font-weight:bold;
+  cursor:pointer;
+  white-space:nowrap;
+}
 
-    .content {
-      padding: 25px;
-    }
+/* CONTENT */
+.content{padding:25px}
 
-    label {
-      font-weight: 600;
-      display: block;
-      margin-top: 12px;
-    }
+label{
+  display:block;
+  font-weight:600;
+  margin:12px 0 5px;
+}
 
-    select, button {
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 10px;
-      border: 2px solid #ddd;
-      width: 100%;
-      max-width: 250px;
-      margin-top: 6px;
-    }
+select,button{
+  padding:12px;
+  font-size:16px;
+  border-radius:10px;
+  border:2px solid #ddd;
+  width:100%;
+  max-width:250px;
+}
 
-    button {
-      background: var(--primary);
-      color: white;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      max-width: 200px;
-    }
+button{
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  max-width:200px;
+  margin-top:10px;
+}
 
-    .info-box {
-      background: #eef7ff;
-      border-left: 4px solid var(--primary);
-      padding: 14px;
-      border-radius: 10px;
-      margin: 15px 0;
-    }
+.info-box{
+  background:#eef7ff;
+  border-left:4px solid var(--primary);
+  padding:14px;
+  border-radius:10px;
+  margin:15px 0;
+}
 
-    .result {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 20px;
-      display: none;
-    }
+.result{
+  margin-top:20px;
+  background:#f9f9f9;
+  padding:20px;
+  border-radius:12px;
+  display:none;
+}
 
-    .voter-list {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 12px;
-      max-height: 300px;
-      overflow-y: auto;
-      line-height: 1.6;
-    }
+.voter-list{
+  background:#fff;
+  padding:15px;
+  border-radius:8px;
+  margin-top:10px;
+  max-height:300px;
+  overflow-y:auto;
+  line-height:1.6;
+}
 
-    /* ---------- HINDI ---------- */
-    .hindi {
-      font-family: 'Noto Sans Devanagari', 'Segoe UI', sans-serif;
-      line-height: 1.6;
-    }
-
-  </style>
+/* HINDI */
+.hindi{
+  font-family:'Noto Sans Devanagari','Segoe UI',sans-serif;
+  line-height:1.6;
+}
+</style>
 </head>
 
 <body>
 
+<!-- PASSWORD -->
 <div class="password-container" id="passwordScreen">
   <div class="password-header">
     <h1><i class="fas fa-lock"></i> Secure Access Required</h1>
   </div>
+  <p>Enter password to access voter analysis system</p>
   <input type="password" id="passwordInput" placeholder="Enter password">
   <br>
   <button class="password-btn" id="unlockBtn">Unlock System</button>
   <div class="error-msg" id="errorMsg"></div>
 </div>
 
+<!-- MAIN APP -->
 <div class="main-container" id="mainApp">
   <div class="header">
-    <div style="width:70px"></div>
     <h1 id="title">Ward-wise Voter Analysis</h1>
     <button class="lang-toggle" id="langToggle">हिंदी</button>
   </div>
 
   <div class="content">
     <label id="lblWard">1. Select Ward:</label>
-    <select id="wardSelect"><option value="">-- Select Ward --</option></select>
+    <select id="wardSelect">
+      <option value="">-- Select Ward --</option>
+    </select>
 
     <div class="info-box" id="wardSummary" style="display:none;">
-      <p><strong id="totalHousesLabel">Total Houses:</strong> <span id="houseCount"></span></p>
-      <p><strong id="totalVotersWardLabel">Total Voters:</strong> <span id="voterCount"></span></p>
+      <p><strong id="totalHousesLabel">Total Houses in this Ward:</strong> <span id="houseCount">0</span></p>
+      <p><strong id="totalVotersWardLabel">Total Voters in this Ward:</strong> <span id="voterCount">0</span></p>
     </div>
 
     <label id="lblHouse">2. Select House No.:</label>
-    <select id="houseSelect" disabled></select>
+    <select id="houseSelect" disabled>
+      <option value="">-- Select House --</option>
+    </select>
 
-    <button id="btnShow"><i class="fas fa-search"></i> <span id="btnText">Show Voters</span></button>
+    <button id="btnShow">
+      <i class="fas fa-search"></i> <span id="btnText">Show Voters</span>
+    </button>
 
     <div class="result" id="result">
       <h3 id="resultHeader"></h3>
-      <p><strong id="totalLabel">Total Voters:</strong> <span id="totalVoters"></span></p>
+      <p><strong id="totalLabel">Total Voters:</strong> <span id="totalVoters">0</span></p>
       <div class="voter-list" id="voterList"></div>
     </div>
   </div>
@@ -221,12 +228,109 @@
 
 <script>
 const CORRECT_PASSWORD="1857";
-unlockBtn.onclick=()=>passwordInput.value===CORRECT_PASSWORD?(passwordScreen.style.display="none",mainApp.style.display="block",init()):errorMsg.textContent="❌ Incorrect password";
 
-function init(){
-const T={en:{title:"Ward-wise Voter Analysis",lblWard:"1. Select Ward:",lblHouse:"2. Select House No.:",btnText:"Show Voters"},hi:{title:"वार्ड-वार मतदाता विश्लेषण",lblWard:"1. वार्ड चुनें:",lblHouse:"2. मकान संख्या चुनें:",btnText:"मतदाता देखें"}};
-let L="en";
-langToggle.onclick=()=>{L=L==="en"?"hi":"en";document.body.className=L==="hi"?"hindi":"";title.textContent=T[L].title;lblWard.textContent=T[L].lblWard;lblHouse.textContent=T[L].lblHouse;btnText.textContent=T[L].btnText;langToggle.textContent=L==="en"?"हिंदी":"English";}
+if(sessionStorage.getItem("voterUnlocked")==="yes"){
+  showApp();
+}
+
+unlockBtn.onclick=checkPassword;
+passwordInput.onkeypress=e=>{if(e.key==="Enter")checkPassword();};
+
+function checkPassword(){
+  if(passwordInput.value===CORRECT_PASSWORD){
+    sessionStorage.setItem("voterUnlocked","yes");
+    showApp();
+  }else{
+    errorMsg.textContent="❌ Incorrect password";
+    passwordInput.value="";
+  }
+}
+
+function showApp(){
+  passwordScreen.style.display="none";
+  mainApp.style.display="block";
+  initApp();
+}
+
+function initApp(){
+const text={
+en:{
+ title:"Ward-wise Voter Analysis",
+ lblWard:"1. Select Ward:",
+ lblHouse:"2. Select House No.:",
+ btnText:"Show Voters",
+ th:"Total Houses in this Ward:",
+ tv:"Total Voters in this Ward:",
+ total:"Total Voters:",
+ header:(w,h)=>`Ward ${w}, House ${h}`
+},
+hi:{
+ title:"वार्ड-वार मतदाता विश्लेषण",
+ lblWard:"1. वार्ड चुनें:",
+ lblHouse:"2. मकान संख्या चुनें:",
+ btnText:"मतदाता देखें",
+ th:"इस वार्ड में कुल मकान:",
+ tv:"इस वार्ड में कुल मतदाता:",
+ total:"कुल मतदाता:",
+ header:(w,h)=>`वार्ड ${w}, मकान ${h}`
+}
+};
+
+let lang="en",data=[];
+
+fetch("voters.json")
+.then(r=>r.json())
+.then(d=>{
+ data=d;
+ [...new Set(d.map(x=>x.Ward))].sort((a,b)=>a-b)
+ .forEach(w=>{
+   wardSelect.innerHTML+=`<option value="${w}">Ward ${w}</option>`;
+ });
+});
+
+langToggle.onclick=()=>{
+ lang=lang==="en"?"hi":"en";
+ document.body.className=lang==="hi"?"hindi":"";
+ langToggle.textContent=lang==="en"?"हिंदी":"English";
+ updateText();
+};
+
+function updateText(){
+ const t=text[lang];
+ title.textContent=t.title;
+ lblWard.textContent=t.lblWard;
+ lblHouse.textContent=t.lblHouse;
+ btnText.textContent=t.btnText;
+ totalHousesLabel.textContent=t.th;
+ totalVotersWardLabel.textContent=t.tv;
+ totalLabel.textContent=t.total;
+}
+
+wardSelect.onchange=()=>{
+ const w=+wardSelect.value;
+ if(!w)return;
+ const wd=data.filter(x=>x.Ward===w);
+ const houses=[...new Set(wd.map(x=>x.H_No))].sort((a,b)=>a-b);
+ houseCount.textContent=houses.length;
+ voterCount.textContent=wd.length;
+ wardSummary.style.display="block";
+ houseSelect.disabled=false;
+ houseSelect.innerHTML='<option value="">-- Select House --</option>';
+ houses.forEach(h=>{
+   houseSelect.innerHTML+=`<option value="${h}">${lang==="hi"?"मकान":"House"} ${h}</option>`;
+ });
+ result.style.display="none";
+};
+
+btnShow.onclick=()=>{
+ const w=+wardSelect.value,h=+houseSelect.value;
+ if(!w||!h)return;
+ const v=data.filter(x=>x.Ward===w&&x.H_No===h);
+ resultHeader.textContent=text[lang].header(w,h);
+ totalVoters.textContent=v.length;
+ voterList.textContent=v.map(x=>lang==="hi"?x.Name_hi:x.Name_en).join(", ");
+ result.style.display="block";
+};
 }
 </script>
 
