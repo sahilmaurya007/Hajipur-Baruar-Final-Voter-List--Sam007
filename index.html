@@ -1,230 +1,499 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Ward-wise Voter Analysis</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ward-wise Voter Analysis</title>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-:root{
- --primary:#4361ee;
- --secondary:#3f37c9;
- --light:#f8f9fa;
- --dark:#212529;
- --card-bg:white;
-}
-body{
- font-family:'Segoe UI',Tahoma,Verdana,sans-serif;
- background:linear-gradient(135deg,#f5f7fa,#e4edf9);
- margin:0;padding:20px;color:var(--dark);
-}
-.container{
- max-width:800px;margin:auto;background:white;
- border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.1);
- overflow:hidden;
-}
-.header{
- background:var(--primary);color:white;
- padding:25px;text-align:center;position:relative;
-}
-.header h1{margin:0;font-size:28px;}
-.lang-toggle{
- position:absolute;top:20px;right:20px;
- background:rgba(255,255,255,.2);
- border:none;color:white;
- padding:6px 12px;border-radius:20px;
- cursor:pointer;font-weight:bold;
-}
-.content{padding:25px;}
-label{display:block;margin:10px 0 5px;font-weight:600;}
-select,button{
- padding:12px;font-size:16px;
- border:2px solid #ddd;border-radius:10px;
- width:100%;max-width:250px;margin:5px 0;
-}
-button{
- background:var(--primary);color:white;
- border:none;cursor:pointer;font-weight:bold;
- max-width:200px;
-}
-.info-box{
- background:#eef7ff;padding:14px;
- border-radius:10px;margin:15px 0;
- border-left:4px solid var(--primary);
-}
-.result{
- margin-top:20px;padding:20px;
- background:#f9f9f9;border-radius:12px;display:none;
-}
-.voter-list{
- background:white;padding:15px;
- border-radius:8px;max-height:300px;
- overflow-y:auto;margin-top:12px;line-height:1.5;
-}
-.chart-box{
- margin-top:25px;background:white;
- padding:20px;border-radius:12px;display:none;
-}
-</style>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --card-bg: white;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+      margin: 0;
+      padding: 20px;
+      color: var(--dark);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 25px;
+      text-align: center;
+      position: relative;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+    .lang-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .content {
+      padding: 25px;
+    }
+    .password-screen {
+      text-align: center;
+      padding: 40px 25px;
+    }
+    .password-screen h2 {
+      margin-bottom: 20px;
+      color: var(--primary);
+    }
+    .password-input {
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 300px;
+      margin: 10px auto;
+      text-align: center;
+    }
+    .password-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      margin-top: 15px;
+    }
+    .error-message {
+      color: #dc3545;
+      margin-top: 10px;
+      display: none;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: 600;
+    }
+    select, button {
+      padding: 12px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 250px;
+      margin: 5px 0;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      max-width: 200px;
+    }
+    .info-box {
+      background: #eef7ff;
+      padding: 14px;
+      border-radius: 10px;
+      margin: 15px 0;
+      border-left: 4px solid var(--primary);
+    }
+    .result {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      display: none;
+    }
+    .voter-list {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    .chart-box {
+      margin-top: 25px;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      display: none;
+    }
+    .main-content {
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
 <div class="container">
- <div class="header">
-  <h1 id="title">Ward-wise Voter Analysis</h1>
-  <button class="lang-toggle" id="langToggle">हिंदी</button>
- </div>
-
- <div class="content">
-  <label id="lblWard">1. Select Ward:</label>
-  <select id="wardSelect">
-   <option value="">-- Select Ward --</option>
-  </select>
-
-  <div class="info-box" id="wardSummary" style="display:none;">
-   <p><strong id="totalHousesLabel"></strong> <span id="houseCount">0</span></p>
-   <p><strong id="totalVotersWardLabel"></strong> <span id="voterCount">0</span></p>
+  <div class="header">
+    <h1 id="title">Ward-wise Voter Analysis</h1>
+    <button class="lang-toggle" id="langToggle">हिंदी</button>
   </div>
 
-  <div class="chart-box" id="chartBox">
-   <canvas id="wardPieChart"></canvas>
+  <!-- Password Screen -->
+  <div class="password-screen" id="passwordScreen">
+    <h2 id="passwordTitle">Enter Password to Access</h2>
+    <input type="password" id="passwordInput" class="password-input" placeholder="Enter password">
+    <button class="password-btn" id="passwordBtn">
+      <i class="fas fa-lock"></i> <span id="passwordBtnText">Access Dashboard</span>
+    </button>
+    <div class="error-message" id="passwordError">
+      <i class="fas fa-exclamation-circle"></i> <span id="errorText">Incorrect password. Please try again.</span>
+    </div>
   </div>
 
-  <label id="lblHouse">2. Select House No.:</label>
-  <select id="houseSelect" disabled>
-   <option value="">-- Select House --</option>
-  </select>
+  <!-- Main Content (hidden until password is entered) -->
+  <div class="main-content" id="mainContent">
+    <div class="content">
 
-  <button id="btnShow"><i class="fas fa-search"></i> <span id="btnText">Show Voters</span></button>
+      <label id="lblWard">1. Select Ward:</label>
+      <select id="wardSelect">
+        <option value="">-- Select Ward --</option>
+      </select>
 
-  <div class="result" id="result">
-   <h3><span id="resultHeader"></span></h3>
-   <p><strong id="totalLabel"></strong> <span id="totalVoters">0</span></p>
-   <div class="voter-list" id="voterList"></div>
+      <div class="info-box" id="wardSummary" style="display:none;">
+        <p><strong id="totalHousesLabel">Total Houses in this Ward:</strong> <span id="houseCount">0</span></p>
+        <p><strong id="totalVotersWardLabel">Total Voters in this Ward:</strong> <span id="voterCount">0</span></p>
+      </div>
+
+      <div class="chart-box" id="chartBox">
+        <canvas id="wardPieChart"></canvas>
+      </div>
+
+      <label id="lblHouse">2. Select House No.:</label>
+      <select id="houseSelect" disabled>
+        <option value="">-- Select House --</option>
+      </select>
+
+      <button id="btnShow">
+        <i class="fas fa-search"></i> <span id="btnText">Show Voters</span>
+      </button>
+
+      <div class="result" id="result">
+        <h3><i class="fas fa-house-user"></i> <span id="resultHeader"></span></h3>
+        <p><strong id="totalLabel">Total Voters:</strong> <span id="totalVoters">0</span></p>
+        <div class="voter-list" id="voterList"></div>
+      </div>
+
+    </div>
   </div>
- </div>
 </div>
 
 <script>
-/* ---------- DOM REFERENCES (FIXED) ---------- */
-const title=document.getElementById('title');
-const lblWard=document.getElementById('lblWard');
-const lblHouse=document.getElementById('lblHouse');
-const btnText=document.getElementById('btnText');
-const wardSelect=document.getElementById('wardSelect');
-const houseSelect=document.getElementById('houseSelect');
-const wardSummary=document.getElementById('wardSummary');
-const houseCount=document.getElementById('houseCount');
-const voterCount=document.getElementById('voterCount');
-const result=document.getElementById('result');
-const resultHeader=document.getElementById('resultHeader');
-const totalVoters=document.getElementById('totalVoters');
-const voterList=document.getElementById('voterList');
-const chartBox=document.getElementById('chartBox');
-const langToggle=document.getElementById('langToggle');
-const totalHousesLabel=document.getElementById('totalHousesLabel');
-const totalVotersWardLabel=document.getElementById('totalVotersWardLabel');
-const totalLabel=document.getElementById('totalLabel');
+// Password for access (change this to your desired password)
+const ACCESS_PASSWORD = "admin123";
 
-let currentLang='en',allData=[],pieChart=null;
+let currentLang = 'en';
+let allData = [];
+let pieChart = null;
 
-/* ---------- TEXT ---------- */
-const texts={
- en:{
-  title:"Ward-wise Voter Analysis",
-  lblWard:"1. Select Ward:",
-  lblHouse:"2. Select House No.:",
-  btnText:"Show Voters",
-  totalHousesLabel:"Total Houses in this Ward:",
-  totalVotersWardLabel:"Total Voters in this Ward:",
-  totalLabel:"Total Voters:",
-  resultHeader:(w,h)=>`Ward ${w}, House ${h}`
- },
- hi:{
-  title:"वार्ड-वार मतदाता विश्लेषण",
-  lblWard:"1. वार्ड चुनें:",
-  lblHouse:"2. मकान संख्या चुनें:",
-  btnText:"मतदाता देखें",
-  totalHousesLabel:"इस वार्ड में कुल मकान:",
-  totalVotersWardLabel:"इस वार्ड में कुल मतदाता:",
-  totalLabel:"कुल मतदाता:",
-  resultHeader:(w,h)=>`वार्ड ${w}, मकान ${h}`
- }
+/* ---------- LANGUAGE TEXT ---------- */
+const texts = {
+  en: {
+    title: "Ward-wise Voter Analysis",
+    passwordTitle: "Enter Password to Access",
+    passwordBtnText: "Access Dashboard",
+    errorText: "Incorrect password. Please try again.",
+    lblWard: "1. Select Ward:",
+    lblHouse: "2. Select House No.:",
+    btnText: "Show Voters",
+    totalHousesLabel: "Total Houses in this Ward:",
+    totalVotersWardLabel: "Total Voters in this Ward:",
+    totalLabel: "Total Voters:",
+    resultHeader: (w, h) => `Ward ${w}, House ${h}`
+  },
+  hi: {
+    title: "वार्ड-वार मतदाता विश्लेषण",
+    passwordTitle: "एक्सेस करने के लिए पासवर्ड दर्ज करें",
+    passwordBtnText: "डैशबोर्ड एक्सेस करें",
+    errorText: "गलत पासवर्ड। कृपया पुनः प्रयास करें।",
+    lblWard: "1. वार्ड चुनें:",
+    lblHouse: "2. मकान संख्या चुनें:",
+    btnText: "मतदाता देखें",
+    totalHousesLabel: "इस वार्ड में कुल मकान:",
+    totalVotersWardLabel: "इस वार्ड में कुल मतदाता:",
+    totalLabel: "कुल मतदाता:",
+    resultHeader: (w, h) => `वार्ड ${w}, मकान ${h}`
+  }
 };
+
+/* ---------- INITIALIZE APP ---------- */
+function initializeApp() {
+  updateUI();
+  setupEventListeners();
+}
+
+/* ---------- SETUP EVENT LISTENERS ---------- */
+function setupEventListeners() {
+  // Password button click
+  passwordBtn.onclick = checkPassword;
+  
+  // Enter key in password field
+  passwordInput.onkeypress = function(e) {
+    if (e.key === 'Enter') checkPassword();
+  };
+  
+  // Language toggle
+  langToggle.onclick = () => {
+    currentLang = currentLang === 'en' ? 'hi' : 'en';
+    langToggle.textContent = currentLang === 'en' ? 'हिंदी' : 'English';
+    updateUI();
+  };
+  
+  // Ward select change
+  wardSelect.onchange = handleWardChange;
+  
+  // Show voters button
+  btnShow.onclick = showVoters;
+}
+
+/* ---------- CHECK PASSWORD ---------- */
+function checkPassword() {
+  const enteredPassword = passwordInput.value.trim();
+  if (enteredPassword === ACCESS_PASSWORD) {
+    // Correct password - show main content
+    passwordScreen.style.display = 'none';
+    mainContent.style.display = 'block';
+    
+    // Load data after successful password entry
+    loadData();
+  } else {
+    // Incorrect password - show error
+    passwordError.style.display = 'block';
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
+}
 
 /* ---------- LOAD DATA ---------- */
-fetch('voters.json').then(r=>r.json()).then(data=>{
- allData=data;
- [...new Set(data.map(d=>d.Ward))].sort((a,b)=>a-b).forEach(w=>{
-  wardSelect.innerHTML+=`<option value="${w}">Ward ${w}</option>`;
- });
- updateUI();
-});
-
-/* ---------- LANGUAGE ---------- */
-langToggle.onclick=()=>{
- currentLang=currentLang==='en'?'hi':'en';
- langToggle.textContent=currentLang==='en'?'हिंदी':'English';
- updateUI();
-};
-
-function updateUI(){
- const t=texts[currentLang];
- title.textContent=t.title;
- lblWard.textContent=t.lblWard;
- lblHouse.textContent=t.lblHouse;
- btnText.textContent=t.btnText;
- totalHousesLabel.textContent=t.totalHousesLabel;
- totalVotersWardLabel.textContent=t.totalVotersWardLabel;
- totalLabel.textContent=t.totalLabel;
+function loadData() {
+  // In a real app, you would fetch from a JSON file
+  // For demonstration, let's create some sample data if voters.json doesn't exist
+  try {
+    fetch('voters.json')
+      .then(r => {
+        if (!r.ok) throw new Error('File not found');
+        return r.json();
+      })
+      .then(data => {
+        allData = data;
+        populateWardDropdown();
+      })
+      .catch(error => {
+        console.log('Using sample data:', error.message);
+        createSampleData();
+      });
+  } catch (error) {
+    console.log('Creating sample data');
+    createSampleData();
+  }
 }
 
-/* ---------- WARD ---------- */
-wardSelect.onchange=()=>{
- const w=+wardSelect.value;
- if(!w){chartBox.style.display='none';return;}
-
- const wardVoters=allData.filter(d=>d.Ward===w);
- const houses=[...new Set(wardVoters.map(d=>d.H_No))].sort((a,b)=>a-b);
-
- houseCount.textContent=houses.length;
- voterCount.textContent=wardVoters.length;
- wardSummary.style.display='block';
-
- houseSelect.innerHTML='<option value="">-- Select House --</option>';
- houses.forEach(h=>{
-  houseSelect.innerHTML+=`<option value="${h}">${currentLang==='hi'?'मकान':'House'} ${h}</option>`;
- });
- houseSelect.disabled=false;
- drawPieChart(wardVoters);
-};
-
-/* ---------- PIE ---------- */
-function drawPieChart(data){
- const map={};
- data.forEach(v=>map[v.H_No]=(map[v.H_No]||0)+1);
- if(pieChart) pieChart.destroy();
- pieChart=new Chart(document.getElementById('wardPieChart'),{
-  type:'pie',
-  data:{labels:Object.keys(map),datasets:[{data:Object.values(map)}]},
-  options:{plugins:{legend:{position:'bottom'}}}
- });
- chartBox.style.display='block';
+/* ---------- CREATE SAMPLE DATA (for testing) ---------- */
+function createSampleData() {
+  // Create sample data for 11 wards
+  allData = [];
+  for (let ward = 1; ward <= 11; ward++) {
+    for (let house = 1; house <= 5; house++) {
+      const voterCount = Math.floor(Math.random() * 5) + 1;
+      for (let v = 1; v <= voterCount; v++) {
+        allData.push({
+          Ward: ward,
+          H_No: house,
+          Name_en: `Voter ${v} (W${ward}H${house})`,
+          Name_hi: `मतदाता ${v} (व${ward}म${house})`
+        });
+      }
+    }
+  }
+  populateWardDropdown();
 }
 
-/* ---------- SHOW ---------- */
-btnShow.onclick=()=>{
- const w=+wardSelect.value,h=+houseSelect.value;
- if(!w||!h)return;
- const voters=allData.filter(d=>d.Ward===w&&d.H_No===h);
- resultHeader.textContent=texts[currentLang].resultHeader(w,h);
- totalVoters.textContent=voters.length;
- voterList.textContent=voters.map(v=>currentLang==='hi'?v.Name_hi:v.Name_en).join(', ');
- result.style.display='block';
-};
+/* ---------- POPULATE WARD DROPDOWN ---------- */
+function populateWardDropdown() {
+  const wards = [...new Set(allData.map(d => d.Ward))].sort((a, b) => a - b);
+  
+  // Clear existing options (except the first one)
+  wardSelect.innerHTML = '<option value="">-- Select Ward --</option>';
+  
+  // Add ward options
+  wards.forEach(ward => {
+    const option = document.createElement('option');
+    option.value = ward;
+    option.textContent = currentLang === 'hi' ? `वार्ड ${ward}` : `Ward ${ward}`;
+    wardSelect.appendChild(option);
+  });
+  
+  console.log(`Populated ${wards.length} wards:`, wards);
+}
+
+/* ---------- UPDATE UI ---------- */
+function updateUI() {
+  const t = texts[currentLang];
+  title.textContent = t.title;
+  passwordTitle.textContent = t.passwordTitle;
+  passwordBtnText.textContent = t.passwordBtnText;
+  errorText.textContent = t.errorText;
+  lblWard.textContent = t.lblWard;
+  lblHouse.textContent = t.lblHouse;
+  btnText.textContent = t.btnText;
+  totalHousesLabel.textContent = t.totalHousesLabel;
+  totalVotersWardLabel.textContent = t.totalVotersWardLabel;
+  totalLabel.textContent = t.totalLabel;
+  
+  // Update placeholders
+  passwordInput.placeholder = currentLang === 'hi' ? 'पासवर्ड दर्ज करें' : 'Enter password';
+  
+  // Update ward dropdown labels if already populated
+  if (allData.length > 0) {
+    const wardOptions = wardSelect.querySelectorAll('option:not(:first-child)');
+    wardOptions.forEach(option => {
+      const wardNum = option.value;
+      option.textContent = currentLang === 'hi' ? `वार्ड ${wardNum}` : `Ward ${wardNum}`;
+    });
+  }
+}
+
+/* ---------- WARD CHANGE ---------- */
+function handleWardChange() {
+  const ward = +wardSelect.value;
+  if (!ward) { 
+    chartBox.style.display = 'none';
+    wardSummary.style.display = 'none';
+    houseSelect.disabled = true;
+    return; 
+  }
+
+  const wardVoters = allData.filter(d => d.Ward === ward);
+  const houses = [...new Set(wardVoters.map(d => d.H_No))].sort((a, b) => a - b);
+
+  houseCount.textContent = houses.length;
+  voterCount.textContent = wardVoters.length;
+  wardSummary.style.display = 'block';
+
+  // Populate house dropdown
+  houseSelect.innerHTML = '<option value="">-- Select House --</option>';
+  houses.forEach(h => {
+    const option = document.createElement('option');
+    option.value = h;
+    option.textContent = currentLang === 'hi' ? `मकान ${h}` : `House ${h}`;
+    houseSelect.appendChild(option);
+  });
+  
+  houseSelect.disabled = false;
+  result.style.display = 'none';
+
+  drawPieChart(wardVoters);
+}
+
+/* ---------- PIE CHART FUNCTION ---------- */
+function drawPieChart(data) {
+  const houseMap = {};
+  data.forEach(v => {
+    houseMap[v.H_No] = (houseMap[v.H_No] || 0) + 1;
+  });
+
+  const labels = Object.keys(houseMap).map(h => 
+    `${currentLang === 'hi' ? 'मकान' : 'House'} ${h}`
+  );
+  const values = Object.values(houseMap);
+
+  const colors = labels.map((_, i) => `hsl(${i * 50}, 70%, 60%)`);
+
+  if (pieChart) pieChart.destroy();
+
+  const ctx = document.getElementById('wardPieChart').getContext('2d');
+  pieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderWidth: 1,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 20,
+            usePointStyle: true,
+          }
+        },
+        title: {
+          display: true,
+          text: currentLang === 'hi' ? 'मकान-वार मतदाता वितरण' : 'House-wise Voter Distribution',
+          font: {
+            size: 16
+          }
+        }
+      }
+    }
+  });
+
+  chartBox.style.display = 'block';
+}
+
+/* ---------- SHOW VOTERS ---------- */
+function showVoters() {
+  const w = +wardSelect.value;
+  const h = +houseSelect.value;
+  
+  if (!w || !h) {
+    alert(currentLang === 'hi' ? 'कृपया वार्ड और मकान संख्या चुनें' : 'Please select ward and house number');
+    return;
+  }
+  
+  const voters = allData.filter(d => d.Ward === w && d.H_No === h);
+  resultHeader.textContent = texts[currentLang].resultHeader(w, h);
+  totalVoters.textContent = voters.length;
+  
+  if (voters.length > 0) {
+    voterList.innerHTML = voters.map(v => 
+      `<div>• ${currentLang === 'hi' ? v.Name_hi : v.Name_en}</div>`
+    ).join('');
+  } else {
+    voterList.textContent = currentLang === 'hi' ? 'कोई मतदाता नहीं मिला' : 'No voters found';
+  }
+  
+  result.style.display = 'block';
+}
+
+/* ---------- INITIALIZE ON LOAD ---------- */
+document.addEventListener('DOMContentLoaded', initializeApp);
 </script>
 </body>
 </html>
