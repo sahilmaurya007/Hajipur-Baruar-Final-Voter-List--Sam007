@@ -145,9 +145,53 @@
       padding: 20px;
       border-radius: 12px;
       display: none;
+      text-align: center;
     }
     .main-content {
       display: none;
+    }
+    /* Smaller pie chart container */
+    .chart-container {
+      max-width: 400px;
+      margin: 0 auto;
+      height: 300px;
+    }
+    /* House summary table */
+    .house-summary {
+      margin-top: 20px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #dee2e6;
+      display: none;
+    }
+    .house-summary h4 {
+      margin-top: 0;
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+    .house-summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .house-summary-table th {
+      background: var(--primary);
+      color: white;
+      padding: 10px;
+      text-align: left;
+    }
+    .house-summary-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .house-summary-table tr:nth-child(even) {
+      background: #eef7ff;
+    }
+    .house-summary-table tr:hover {
+      background: #e2eafc;
     }
   </style>
 </head>
@@ -185,8 +229,28 @@
         <p><strong id="totalVotersWardLabel">Total Voters in this Ward:</strong> <span id="voterCount">0</span></p>
       </div>
 
+      <!-- House Summary Table -->
+      <div class="house-summary" id="houseSummary">
+        <h4 id="houseSummaryTitle">House-wise Voter Count</h4>
+        <table class="house-summary-table" id="houseSummaryTable">
+          <thead>
+            <tr>
+              <th id="houseNoHeader">House No.</th>
+              <th id="votersHeader">Total Voters</th>
+            </tr>
+          </thead>
+          <tbody id="houseSummaryBody">
+            <!-- Will be populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pie Chart Container -->
       <div class="chart-box" id="chartBox">
-        <canvas id="wardPieChart"></canvas>
+        <h4 id="chartTitle">House-wise Voter Distribution</h4>
+        <div class="chart-container">
+          <canvas id="wardPieChart"></canvas>
+        </div>
       </div>
 
       <label id="lblHouse">2. Select House No.:</label>
@@ -229,7 +293,11 @@ const texts = {
     totalHousesLabel: "Total Houses in this Ward:",
     totalVotersWardLabel: "Total Voters in this Ward:",
     totalLabel: "Total Voters:",
-    resultHeader: (w, h) => `Ward ${w}, House ${h}`
+    resultHeader: (w, h) => `Ward ${w}, House ${h}`,
+    houseSummaryTitle: "House-wise Voter Count",
+    houseNoHeader: "House No.",
+    votersHeader: "Total Voters",
+    chartTitle: "House-wise Voter Distribution"
   },
   hi: {
     title: "वार्ड-वार मतदाता विश्लेषण",
@@ -242,7 +310,11 @@ const texts = {
     totalHousesLabel: "इस वार्ड में कुल मकान:",
     totalVotersWardLabel: "इस वार्ड में कुल मतदाता:",
     totalLabel: "कुल मतदाता:",
-    resultHeader: (w, h) => `वार्ड ${w}, मकान ${h}`
+    resultHeader: (w, h) => `वार्ड ${w}, मकान ${h}`,
+    houseSummaryTitle: "मकान-वार मतदाता गणना",
+    houseNoHeader: "मकान संख्या",
+    votersHeader: "कुल मतदाता",
+    chartTitle: "मकान-वार मतदाता वितरण"
   }
 };
 
@@ -296,45 +368,74 @@ function checkPassword() {
 
 /* ---------- LOAD DATA ---------- */
 function loadData() {
-  // In a real app, you would fetch from a JSON file
-  // For demonstration, let's create some sample data if voters.json doesn't exist
-  try {
-    fetch('voters.json')
-      .then(r => {
-        if (!r.ok) throw new Error('File not found');
-        return r.json();
-      })
-      .then(data => {
-        allData = data;
-        populateWardDropdown();
-      })
-      .catch(error => {
-        console.log('Using sample data:', error.message);
-        createSampleData();
-      });
-  } catch (error) {
-    console.log('Creating sample data');
-    createSampleData();
-  }
+  // Try to load from voters.json file
+  fetch('voters.json')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('voters.json not found, creating sample data');
+      }
+      return response.json();
+    })
+    .then(data => {
+      allData = data;
+      console.log('Data loaded from voters.json:', data.length, 'records');
+      populateWardDropdown();
+    })
+    .catch(error => {
+      console.log(error.message);
+      createSampleData();
+    });
 }
 
 /* ---------- CREATE SAMPLE DATA (for testing) ---------- */
 function createSampleData() {
-  // Create sample data for 11 wards
+  console.log('Creating sample data...');
   allData = [];
+  
+  // Create sample data for 11 wards
+  const houseNamesEn = [
+    "A-101", "A-102", "A-103", "B-201", "B-202", 
+    "C-301", "C-302", "D-401", "D-402", "E-501"
+  ];
+  
+  const houseNamesHi = [
+    "ए-101", "ए-102", "ए-103", "बी-201", "बी-202", 
+    "सी-301", "सी-302", "डी-401", "डी-402", "ई-501"
+  ];
+  
+  const voterNamesEn = [
+    "Rajesh Kumar", "Sunita Sharma", "Amit Patel", "Priya Singh", "Vikram Yadav",
+    "Neha Gupta", "Sanjay Verma", "Anjali Mishra", "Rahul Jain", "Pooja Reddy",
+    "Mohan Das", "Kavita Nair", "Deepak Choudhary", "Swati Tiwari", "Rohan Mehta"
+  ];
+  
+  const voterNamesHi = [
+    "राजेश कुमार", "सुनीता शर्मा", "अमित पटेल", "प्रिया सिंह", "विक्रम यादव",
+    "नेहा गुप्ता", "संजय वर्मा", "अंजलि मिश्रा", "राहुल जैन", "पूजा रेड्डी",
+    "मोहन दास", "कविता नायर", "दीपक चौधरी", "स्वाति तिवारी", "रोहन मेहता"
+  ];
+
   for (let ward = 1; ward <= 11; ward++) {
-    for (let house = 1; house <= 5; house++) {
-      const voterCount = Math.floor(Math.random() * 5) + 1;
-      for (let v = 1; v <= voterCount; v++) {
+    // Each ward has 5-10 houses
+    const numHouses = Math.floor(Math.random() * 6) + 5;
+    
+    for (let h = 1; h <= numHouses; h++) {
+      // Each house has 1-5 voters
+      const numVoters = Math.floor(Math.random() * 5) + 1;
+      
+      for (let v = 1; v <= numVoters; v++) {
+        const nameIndex = (ward + h + v) % voterNamesEn.length;
         allData.push({
           Ward: ward,
-          H_No: house,
-          Name_en: `Voter ${v} (W${ward}H${house})`,
-          Name_hi: `मतदाता ${v} (व${ward}म${house})`
+          H_No: houseNamesEn[h-1], // Using house names instead of numbers
+          Name_en: voterNamesEn[nameIndex],
+          Name_hi: voterNamesHi[nameIndex]
         });
       }
     }
   }
+  
+  console.log('Sample data created:', allData.length, 'records');
   populateWardDropdown();
 }
 
@@ -353,7 +454,7 @@ function populateWardDropdown() {
     wardSelect.appendChild(option);
   });
   
-  console.log(`Populated ${wards.length} wards:`, wards);
+  console.log(`Populated ${wards.length} wards`);
 }
 
 /* ---------- UPDATE UI ---------- */
@@ -369,6 +470,10 @@ function updateUI() {
   totalHousesLabel.textContent = t.totalHousesLabel;
   totalVotersWardLabel.textContent = t.totalVotersWardLabel;
   totalLabel.textContent = t.totalLabel;
+  houseSummaryTitle.textContent = t.houseSummaryTitle;
+  houseNoHeader.textContent = t.houseNoHeader;
+  votersHeader.textContent = t.votersHeader;
+  chartTitle.textContent = t.chartTitle;
   
   // Update placeholders
   passwordInput.placeholder = currentLang === 'hi' ? 'पासवर्ड दर्ज करें' : 'Enter password';
@@ -388,48 +493,92 @@ function handleWardChange() {
   const ward = +wardSelect.value;
   if (!ward) { 
     chartBox.style.display = 'none';
+    houseSummary.style.display = 'none';
     wardSummary.style.display = 'none';
     houseSelect.disabled = true;
     return; 
   }
 
   const wardVoters = allData.filter(d => d.Ward === ward);
-  const houses = [...new Set(wardVoters.map(d => d.H_No))].sort((a, b) => a - b);
+  const houseMap = {};
+  
+  // Count voters per house
+  wardVoters.forEach(v => {
+    houseMap[v.H_No] = (houseMap[v.H_No] || 0) + 1;
+  });
+  
+  const houses = Object.keys(houseMap).sort();
+  const houseCounts = houses.map(h => houseMap[h]);
 
+  // Update ward summary
   houseCount.textContent = houses.length;
   voterCount.textContent = wardVoters.length;
   wardSummary.style.display = 'block';
 
   // Populate house dropdown
   houseSelect.innerHTML = '<option value="">-- Select House --</option>';
-  houses.forEach(h => {
+  houses.forEach(house => {
     const option = document.createElement('option');
-    option.value = h;
-    option.textContent = currentLang === 'hi' ? `मकान ${h}` : `House ${h}`;
+    option.value = house;
+    option.textContent = currentLang === 'hi' ? `मकान ${house}` : `House ${house}`;
     houseSelect.appendChild(option);
   });
   
   houseSelect.disabled = false;
   result.style.display = 'none';
 
-  drawPieChart(wardVoters);
+  // Update house summary table
+  updateHouseSummaryTable(houseMap);
+  
+  // Draw pie chart
+  drawPieChart(houses, houseCounts);
+}
+
+/* ---------- UPDATE HOUSE SUMMARY TABLE ---------- */
+function updateHouseSummaryTable(houseMap) {
+  const houseSummaryBody = document.getElementById('houseSummaryBody');
+  houseSummaryBody.innerHTML = '';
+  
+  // Sort houses naturally
+  const sortedHouses = Object.keys(houseMap).sort((a, b) => {
+    return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+  });
+  
+  // Add rows to table
+  sortedHouses.forEach(houseNo => {
+    const row = document.createElement('tr');
+    
+    const houseCell = document.createElement('td');
+    houseCell.textContent = houseNo;
+    
+    const votersCell = document.createElement('td');
+    votersCell.textContent = houseMap[houseNo];
+    
+    row.appendChild(houseCell);
+    row.appendChild(votersCell);
+    houseSummaryBody.appendChild(row);
+  });
+  
+  // Show the house summary section
+  houseSummary.style.display = 'block';
 }
 
 /* ---------- PIE CHART FUNCTION ---------- */
-function drawPieChart(data) {
-  const houseMap = {};
-  data.forEach(v => {
-    houseMap[v.H_No] = (houseMap[v.H_No] || 0) + 1;
-  });
-
-  const labels = Object.keys(houseMap).map(h => 
+function drawPieChart(houses, counts) {
+  const labels = houses.map(h => 
     `${currentLang === 'hi' ? 'मकान' : 'House'} ${h}`
   );
-  const values = Object.values(houseMap);
 
-  const colors = labels.map((_, i) => `hsl(${i * 50}, 70%, 60%)`);
+  // Generate colors for each house
+  const colors = houses.map((_, i) => {
+    const hue = (i * 137.5) % 360; // Golden angle for good distribution
+    return `hsl(${hue}, 70%, 60%)`;
+  });
 
-  if (pieChart) pieChart.destroy();
+  // Destroy existing chart if it exists
+  if (pieChart) {
+    pieChart.destroy();
+  }
 
   const ctx = document.getElementById('wardPieChart').getContext('2d');
   pieChart = new Chart(ctx, {
@@ -437,7 +586,7 @@ function drawPieChart(data) {
     data: {
       labels: labels,
       datasets: [{
-        data: values,
+        data: counts,
         backgroundColor: colors,
         borderWidth: 1,
         borderColor: '#fff'
@@ -445,19 +594,27 @@ function drawPieChart(data) {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom',
+          position: 'right',
           labels: {
-            padding: 20,
+            padding: 15,
             usePointStyle: true,
+            font: {
+              size: 11
+            }
           }
         },
-        title: {
-          display: true,
-          text: currentLang === 'hi' ? 'मकान-वार मतदाता वितरण' : 'House-wise Voter Distribution',
-          font: {
-            size: 16
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ${value} voters (${percentage}%)`;
+            }
           }
         }
       }
@@ -470,7 +627,7 @@ function drawPieChart(data) {
 /* ---------- SHOW VOTERS ---------- */
 function showVoters() {
   const w = +wardSelect.value;
-  const h = +houseSelect.value;
+  const h = document.getElementById('houseSelect').value;
   
   if (!w || !h) {
     alert(currentLang === 'hi' ? 'कृपया वार्ड और मकान संख्या चुनें' : 'Please select ward and house number');
