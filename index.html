@@ -274,7 +274,7 @@
 
 <script>
 // Password for access (change this to your desired password)
-const ACCESS_PASSWORD = "admin123";
+const ACCESS_PASSWORD = "1857"; // CHANGED TO 1857
 
 let currentLang = 'en';
 let allData = [];
@@ -393,16 +393,6 @@ function createSampleData() {
   allData = [];
   
   // Create sample data for 11 wards
-  const houseNamesEn = [
-    "A-101", "A-102", "A-103", "B-201", "B-202", 
-    "C-301", "C-302", "D-401", "D-402", "E-501"
-  ];
-  
-  const houseNamesHi = [
-    "ए-101", "ए-102", "ए-103", "बी-201", "बी-202", 
-    "सी-301", "सी-302", "डी-401", "डी-402", "ई-501"
-  ];
-  
   const voterNamesEn = [
     "Rajesh Kumar", "Sunita Sharma", "Amit Patel", "Priya Singh", "Vikram Yadav",
     "Neha Gupta", "Sanjay Verma", "Anjali Mishra", "Rahul Jain", "Pooja Reddy",
@@ -416,18 +406,18 @@ function createSampleData() {
   ];
 
   for (let ward = 1; ward <= 11; ward++) {
-    // Each ward has 5-10 houses
-    const numHouses = Math.floor(Math.random() * 6) + 5;
+    // Each ward has 10-15 houses (numbered 1-15)
+    const numHouses = Math.floor(Math.random() * 6) + 10;
     
-    for (let h = 1; h <= numHouses; h++) {
+    for (let houseNum = 1; houseNum <= numHouses; houseNum++) {
       // Each house has 1-5 voters
       const numVoters = Math.floor(Math.random() * 5) + 1;
       
       for (let v = 1; v <= numVoters; v++) {
-        const nameIndex = (ward + h + v) % voterNamesEn.length;
+        const nameIndex = (ward + houseNum + v) % voterNamesEn.length;
         allData.push({
           Ward: ward,
-          H_No: houseNamesEn[h-1], // Using house names instead of numbers
+          H_No: houseNum.toString(), // Using simple house numbers (1, 2, 3...)
           Name_en: voterNamesEn[nameIndex],
           Name_hi: voterNamesHi[nameIndex]
         });
@@ -507,8 +497,9 @@ function handleWardChange() {
     houseMap[v.H_No] = (houseMap[v.H_No] || 0) + 1;
   });
   
-  const houses = Object.keys(houseMap).sort();
-  const houseCounts = houses.map(h => houseMap[h]);
+  // Convert house numbers to numbers for proper sorting
+  const houses = Object.keys(houseMap).map(Number).sort((a, b) => a - b);
+  const houseCounts = houses.map(h => houseMap[h.toString()]);
 
   // Update ward summary
   houseCount.textContent = houses.length;
@@ -539,10 +530,11 @@ function updateHouseSummaryTable(houseMap) {
   const houseSummaryBody = document.getElementById('houseSummaryBody');
   houseSummaryBody.innerHTML = '';
   
-  // Sort houses naturally
-  const sortedHouses = Object.keys(houseMap).sort((a, b) => {
-    return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
-  });
+  // Sort houses numerically
+  const sortedHouses = Object.keys(houseMap)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map(String);
   
   // Add rows to table
   sortedHouses.forEach(houseNo => {
@@ -634,7 +626,10 @@ function showVoters() {
     return;
   }
   
-  const voters = allData.filter(d => d.Ward === w && d.H_No === h);
+  // FIX: Convert h to string to match the data format
+  const houseStr = h.toString();
+  const voters = allData.filter(d => d.Ward === w && d.H_No === houseStr);
+  
   resultHeader.textContent = texts[currentLang].resultHeader(w, h);
   totalVoters.textContent = voters.length;
   
