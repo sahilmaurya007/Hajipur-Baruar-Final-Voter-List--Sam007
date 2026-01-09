@@ -29,8 +29,8 @@
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       overflow: hidden;
-      text-align: center;
       padding: 40px 20px;
+      position: relative;
     }
     .header {
       background: var(--primary);
@@ -67,6 +67,10 @@
     button:hover {
       background: #3a56d4;
     }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
     .error {
       color: #e74c3c;
       margin-top: 15px;
@@ -81,12 +85,29 @@
       max-width: 300px;
       margin: 10px 0;
     }
-    .info-box {
-      background: #eef7ff;
+    .step {
+      margin: 20px 0;
       padding: 15px;
       border-radius: 10px;
-      margin: 15px 0;
-      border-left: 4px solid var(--primary);
+      background: #f8f9fa;
+      text-align: left;
+    }
+    .step-label {
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: block;
+      font-size: 16px;
+    }
+    .total-display {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #2c3e50;
+      padding: 15px;
+      background: #e8f4ff;
+      border-radius: 8px;
+      margin: 10px 0;
+      text-align: center;
     }
     .result-box {
       margin-top: 25px;
@@ -94,6 +115,7 @@
       background: #f9f9f9;
       border-radius: 12px;
       border: 1px solid #e0e0e0;
+      display: none;
     }
     .voter-list {
       background: white;
@@ -103,23 +125,8 @@
       overflow-y: auto;
       margin-top: 15px;
       line-height: 1.6;
-      text-align: left;
       border: 1px solid #eee;
     }
-    .step {
-      margin: 20px 0;
-      padding: 15px;
-      border-radius: 10px;
-      background: #f8f9fa;
-    }
-    .step-label {
-      font-weight: bold;
-      color: var(--primary);
-      margin-bottom: 8px;
-      display: block;
-    }
-    .content, #mainApp { display: none; }
-    .content.show, #mainApp.show { display: block; }
     .lang-toggle {
       position: absolute;
       top: 20px;
@@ -132,17 +139,23 @@
       cursor: pointer;
       font-weight: bold;
     }
-    .lang-toggle:hover {
-      background: rgba(255,255,255,0.3);
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
     }
-    .total-display {
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #2c3e50;
-      padding: 10px;
-      background: #e8f4ff;
-      border-radius: 8px;
-      margin: 10px 0;
+    .voter-item {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    .voter-item:last-child {
+      border-bottom: none;
+    }
+    #mainApp {
+      display: none;
+    }
+    #mainApp.show {
+      display: block;
     }
   </style>
 </head>
@@ -153,7 +166,7 @@
       <h1><i class="fas fa-lock"></i> Secure Access Required</h1>
     </div>
     <p>Enter the password to view voter data.</p>
-    <input type="password" id="passwordInput" placeholder="Password" autocomplete="off" />
+    <input type="password" id="passwordInput" placeholder="Enter password" autocomplete="off" />
     <br>
     <button id="unlockBtn">Unlock</button>
     <div class="error" id="errorMsg" style="display: none;"></div>
@@ -167,264 +180,371 @@
     </div>
 
     <div class="content">
-      <!-- Step 1: Select Ward -->
-      <div class="step">
-        <label class="step-label" id="lblWard">1. Select Ward:</label>
-        <select id="wardSelect">
-          <option value="">-- Select Ward --</option>
-        </select>
+      <!-- Loading State -->
+      <div class="loading" id="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading voter data...
       </div>
 
-      <!-- Step 2: Total Houses (Auto-calculated) -->
-      <div class="step" id="totalHousesSection" style="display: none;">
-        <label class="step-label" id="totalHousesLabel">2. Total Houses in Selected Ward:</label>
-        <div class="total-display" id="houseCountDisplay">0</div>
-      </div>
+      <!-- App Content (Hidden until data loaded) -->
+      <div id="appContent" style="display: none;">
+        <!-- Step 1: Select Ward -->
+        <div class="step">
+          <label class="step-label" id="lblWard">1. Select Ward:</label>
+          <select id="wardSelect">
+            <option value="">-- Select Ward --</option>
+          </select>
+        </div>
 
-      <!-- Step 3: Select House -->
-      <div class="step" id="selectHouseSection" style="display: none;">
-        <label class="step-label" id="lblHouse">3. Select House No.:</label>
-        <select id="houseSelect">
-          <option value="">-- Select House --</option>
-        </select>
-      </div>
+        <!-- Step 2: Total Houses -->
+        <div class="step" id="totalHousesSection" style="display: none;">
+          <label class="step-label" id="totalHousesLabel">2. Total Houses in Selected Ward:</label>
+          <div class="total-display" id="houseCountDisplay">0</div>
+        </div>
 
-      <button id="btnShow" style="margin-top: 20px; width: 100%; max-width: 300px;">
-        <i class="fas fa-search"></i> <span id="btnText">Show Voters</span>
-      </button>
+        <!-- Step 3: Select House -->
+        <div class="step" id="selectHouseSection" style="display: none;">
+          <label class="step-label" id="lblHouse">3. Select House No.:</label>
+          <select id="houseSelect">
+            <option value="">-- Select House --</option>
+          </select>
+        </div>
 
-      <!-- Results Section -->
-      <div class="result-box" id="result" style="display: none;">
-        <h3><i class="fas fa-house-user"></i> <span id="resultHeader">Ward 1, House 1</span></h3>
-        <p><strong id="totalLabel">Total Voters in this House:</strong> <span id="totalVoters" style="font-size: 1.2em; color: var(--primary);">0</span></p>
-        
-        <div class="voter-list" id="voterList">
-          <!-- Voter names will appear here -->
+        <div style="text-align: center; margin-top: 20px;">
+          <button id="btnShow" style="width: 100%; max-width: 300px;">
+            <i class="fas fa-search"></i> <span id="btnText">Show Voters</span>
+          </button>
+        </div>
+
+        <!-- Results Section -->
+        <div class="result-box" id="result">
+          <h3><i class="fas fa-house-user"></i> <span id="resultHeader">Ward Details</span></h3>
+          <p><strong id="totalLabel">Total Voters:</strong> <span id="totalVoters" style="font-size: 1.2em; color: var(--primary);">0</span></p>
+          
+          <div class="voter-list" id="voterList">
+            <!-- Voter names will appear here -->
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    // Configuration
     const CORRECT_PASSWORD = "1857";
+    
+    // DOM Elements
     const passwordScreen = document.getElementById('passwordScreen');
     const mainApp = document.getElementById('mainApp');
+    const loadingDiv = document.getElementById('loading');
+    const appContent = document.getElementById('appContent');
 
-    // Check if already unlocked
-    if (sessionStorage.getItem('unlocked') === 'true') {
-      passwordScreen.style.display = 'none';
-      mainApp.classList.add('show');
-      loadApp();
-    } else {
-      document.getElementById('unlockBtn').addEventListener('click', () => {
-        const input = document.getElementById('passwordInput').value;
-        const errorMsg = document.getElementById('errorMsg');
-        if (input === CORRECT_PASSWORD) {
+    // Texts for language switching
+    const texts = {
+      en: {
+        title: "Ward-wise Voter Analysis",
+        lblWard: "1. Select Ward:",
+        totalHousesLabel: "2. Total Houses in Selected Ward:",
+        lblHouse: "3. Select House No.:",
+        btnText: "Show Voters",
+        totalLabel: "Total Voters:",
+        resultHeader: (w, h) => h ? `Ward ${w}, House ${h}` : `All Voters in Ward ${w}`,
+        selectWardFirst: "Please select a ward first",
+        selectHouseFirst: "Please select a house first",
+        noVoters: "No voters found",
+        loading: "Loading voter data...",
+        dataError: "Failed to load voter data. Please refresh the page."
+      },
+      hi: {
+        title: "वार्ड-वार मतदाता विश्लेषण",
+        lblWard: "1. वार्ड चुनें:",
+        totalHousesLabel: "2. चुने गए वार्ड में कुल मकान:",
+        lblHouse: "3. मकान संख्या चुनें:",
+        btnText: "मतदाता देखें",
+        totalLabel: "कुल मतदाता:",
+        resultHeader: (w, h) => h ? `वार्ड ${w}, मकान ${h}` : `वार्ड ${w} के सभी मतदाता`,
+        selectWardFirst: "कृपया पहले एक वार्ड चुनें",
+        selectHouseFirst: "कृपया पहले मकान चुनें",
+        noVoters: "कोई मतदाता नहीं मिले",
+        loading: "मतदाता डेटा लोड हो रहा है...",
+        dataError: "मतदाता डेटा लोड करने में विफल। कृपया पृष्ठ को ताज़ा करें।"
+      }
+    };
+
+    // Application state
+    let currentLang = 'en';
+    let voterData = [];
+    let currentWard = null;
+
+    // Initialize the app
+    function initApp() {
+      // Check if already unlocked
+      if (sessionStorage.getItem('unlocked') === 'true') {
+        unlockApp();
+      } else {
+        setupPasswordScreen();
+      }
+    }
+
+    // Setup password screen
+    function setupPasswordScreen() {
+      const unlockBtn = document.getElementById('unlockBtn');
+      const passwordInput = document.getElementById('passwordInput');
+      const errorMsg = document.getElementById('errorMsg');
+
+      unlockBtn.addEventListener('click', checkPassword);
+      
+      passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkPassword();
+      });
+
+      function checkPassword() {
+        const password = passwordInput.value.trim();
+        if (password === CORRECT_PASSWORD) {
           sessionStorage.setItem('unlocked', 'true');
-          passwordScreen.style.display = 'none';
-          mainApp.classList.add('show');
-          loadApp();
+          unlockApp();
         } else {
           errorMsg.textContent = "❌ Incorrect password. Try again.";
           errorMsg.style.display = 'block';
-          document.getElementById('passwordInput').value = '';
-        }
-      });
-
-      // Allow Enter key
-      document.getElementById('passwordInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') document.getElementById('unlockBtn').click();
-      });
-    }
-
-    function loadApp() {
-      const texts = {
-        en: {
-          title: "Ward-wise Voter Analysis",
-          lblWard: "1. Select Ward:",
-          totalHousesLabel: "2. Total Houses in Selected Ward:",
-          lblHouse: "3. Select House No.:",
-          btnText: "Show Voters",
-          totalLabel: "Total Voters in this House:",
-          resultHeader: (w, h) => `Ward ${w}, House ${h}`,
-          selectWardFirst: "Please select a ward first",
-          noVoters: "No voters found in this house"
-        },
-        hi: {
-          title: "वार्ड-वार मतदाता विश्लेषण",
-          lblWard: "1. वार्ड चुनें:",
-          totalHousesLabel: "2. चुने गए वार्ड में कुल मकान:",
-          lblHouse: "3. मकान संख्या चुनें:",
-          btnText: "मतदाता देखें",
-          totalLabel: "इस मकान में कुल मतदाता:",
-          resultHeader: (w, h) => `वार्ड ${w}, मकान ${h}`,
-          selectWardFirst: "कृपया पहले एक वार्ड चुनें",
-          noVoters: "इस मकान में कोई मतदाता नहीं मिले"
-        }
-      };
-
-      let currentLang = 'en';
-      let allData = [];
-
-      // Load voter data
-      fetch('voters.json')
-        .then(res => {
-          if (!res.ok) throw new Error('Failed to load voter data');
-          return res.json();
-        })
-        .then(data => {
-          allData = data;
-          const wards = [...new Set(data.map(d => d.Ward))].sort((a,b) => a-b);
-          const wardSelect = document.getElementById('wardSelect');
-          wards.forEach(w => {
-            const opt = document.createElement('option');
-            opt.value = w;
-            opt.textContent = `Ward ${w}`;
-            wardSelect.appendChild(opt);
-          });
-          updateUI();
-        })
-        .catch(error => {
-          console.error('Error loading voter data:', error);
-          alert('Failed to load voter data. Please check if voters.json exists.');
-        });
-
-      // Language toggle
-      document.getElementById('langToggle').addEventListener('click', () => {
-        currentLang = currentLang === 'en' ? 'hi' : 'en';
-        document.getElementById('langToggle').textContent = currentLang === 'en' ? 'हिंदी' : 'English';
-        updateUI();
-      });
-
-      function updateUI() {
-        const t = texts[currentLang];
-        document.getElementById('title').textContent = t.title;
-        document.getElementById('lblWard').textContent = t.lblWard;
-        document.getElementById('totalHousesLabel').textContent = t.totalHousesLabel;
-        document.getElementById('lblHouse').textContent = t.lblHouse;
-        document.getElementById('btnText').textContent = t.btnText;
-        document.getElementById('totalLabel').textContent = t.totalLabel;
-
-        // Update ward options
-        const wardOpts = document.querySelectorAll('#wardSelect option');
-        wardOpts.forEach((opt, i) => {
-          if (i > 0) opt.textContent = currentLang === 'hi' ? `वार्ड ${opt.value}` : `Ward ${opt.value}`;
-        });
-
-        // Update house options
-        const houseOpts = document.querySelectorAll('#houseSelect option');
-        houseOpts.forEach((opt, i) => {
-          if (i > 0) opt.textContent = currentLang === 'hi' ? `मकान ${opt.value}` : `House ${opt.value}`;
-        });
-
-        // Update result header if visible
-        const resultHeader = document.getElementById('resultHeader');
-        if (document.getElementById('result').style.display !== 'none') {
-          const ward = document.getElementById('wardSelect').value;
-          const house = document.getElementById('houseSelect').value;
-          if (ward && house) {
-            resultHeader.textContent = t.resultHeader(ward, house);
-          }
+          passwordInput.value = '';
+          passwordInput.focus();
         }
       }
+    }
 
-      // Ward selection handler
-      document.getElementById('wardSelect').addEventListener('change', () => {
-        const ward = parseInt(document.getElementById('wardSelect').value);
-        const totalHousesSection = document.getElementById('totalHousesSection');
-        const selectHouseSection = document.getElementById('selectHouseSection');
-        const resultDiv = document.getElementById('result');
-        
-        // Reset everything if no ward selected
-        if (!ward) {
-          totalHousesSection.style.display = 'none';
-          selectHouseSection.style.display = 'none';
-          resultDiv.style.display = 'none';
-          document.getElementById('houseSelect').innerHTML = '<option value="">-- Select House --</option>';
-          return;
-        }
+    // Unlock and show main app
+    function unlockApp() {
+      passwordScreen.style.display = 'none';
+      mainApp.classList.add('show');
+      loadVoterData();
+    }
 
-        // Filter data for selected ward
-        const wardVoters = allData.filter(d => d.Ward === ward);
-        const houses = [...new Set(wardVoters.map(d => d.H_No))].sort((a,b) => a-b);
-        
-        // Display total houses
-        document.getElementById('houseCountDisplay').textContent = houses.length;
-        totalHousesSection.style.display = 'block';
+    // Load voter data from JSON
+    async function loadVoterData() {
+      try {
+        // Show loading state
+        loadingDiv.style.display = 'block';
+        appContent.style.display = 'none';
+        loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${texts[currentLang].loading}`;
 
-        // Populate house dropdown
-        const houseSelect = document.getElementById('houseSelect');
-        houseSelect.innerHTML = '<option value="">-- Select House --</option>';
-        
-        houses.forEach(h => {
-          const opt = document.createElement('option');
-          opt.value = h;
-          opt.textContent = currentLang === 'hi' ? `मकान ${h}` : `House ${h}`;
-          houseSelect.appendChild(opt);
-        });
-        
-        selectHouseSection.style.display = 'block';
-        resultDiv.style.display = 'none';
-      });
-
-      // Show voters button handler
-      document.getElementById('btnShow').addEventListener('click', () => {
-        const ward = parseInt(document.getElementById('wardSelect').value);
-        const house = parseInt(document.getElementById('houseSelect').value);
-        const t = texts[currentLang];
-
-        if (!ward) {
-          alert(t.selectWardFirst);
-          return;
-        }
-
-        if (!house) {
-          // If no house selected, show all voters in the ward
-          const wardVoters = allData.filter(d => d.Ward === ward);
-          const nameField = currentLang === 'hi' ? 'Name_hi' : 'Name_en';
-          
-          document.getElementById('resultHeader').textContent = currentLang === 'hi' 
-            ? `वार्ड ${ward} के सभी मतदाता` 
-            : `All Voters in Ward ${ward}`;
-          
-          document.getElementById('totalVoters').textContent = wardVoters.length;
-          
-          const voterList = document.getElementById('voterList');
-          if (wardVoters.length > 0) {
-            voterList.innerHTML = wardVoters.map(v => 
-              `<div style="padding: 8px; border-bottom: 1px solid #eee;">
-                <strong>${v[nameField]}</strong> (House: ${v.H_No})
-               </div>`
-            ).join('');
-          } else {
-            voterList.innerHTML = `<p style="color: #666; text-align: center;">${t.noVoters}</p>`;
-          }
-        } else {
-          // Show voters for specific house
-          const voters = allData.filter(d => d.Ward === ward && d.H_No === house);
-          const nameField = currentLang === 'hi' ? 'Name_hi' : 'Name_en';
-
-          document.getElementById('resultHeader').textContent = t.resultHeader(ward, house);
-          document.getElementById('totalVoters').textContent = voters.length;
-          
-          const voterList = document.getElementById('voterList');
-          if (voters.length > 0) {
-            voterList.innerHTML = voters.map(v => 
-              `<div style="padding: 8px; border-bottom: 1px solid #eee;">${v[nameField]}</div>`
-            ).join('');
-          } else {
-            voterList.innerHTML = `<p style="color: #666; text-align: center;">${t.noVoters}</p>`;
-          }
+        // Fetch the data
+        const response = await fetch('voters.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        document.getElementById('result').style.display = 'block';
-      });
+        voterData = await response.json();
+        
+        // Validate data structure
+        if (!Array.isArray(voterData) || voterData.length === 0) {
+          throw new Error('Invalid or empty voter data');
+        }
 
-      // House selection handler
-      document.getElementById('houseSelect').addEventListener('change', () => {
-        document.getElementById('result').style.display = 'none';
+        // Initialize the app UI
+        initUI();
+        
+      } catch (error) {
+        console.error('Error loading voter data:', error);
+        loadingDiv.innerHTML = `
+          <div style="color: #e74c3c;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>${texts[currentLang].dataError}</p>
+            <p style="font-size: 0.9em; color: #666;">${error.message}</p>
+            <button onclick="location.reload()" style="margin-top: 10px;">Retry</button>
+          </div>
+        `;
+      }
+    }
+
+    // Initialize UI after data is loaded
+    function initUI() {
+      // Hide loading, show app content
+      loadingDiv.style.display = 'none';
+      appContent.style.display = 'block';
+
+      // Populate ward dropdown
+      populateWardDropdown();
+      
+      // Setup event listeners
+      setupEventListeners();
+      
+      // Update UI with current language
+      updateUI();
+    }
+
+    // Populate ward dropdown
+    function populateWardDropdown() {
+      const wardSelect = document.getElementById('wardSelect');
+      wardSelect.innerHTML = '<option value="">-- Select Ward --</option>';
+      
+      // Get unique wards and sort them
+      const wards = [...new Set(voterData.map(voter => voter.Ward))]
+        .filter(ward => ward != null)
+        .sort((a, b) => a - b);
+      
+      wards.forEach(ward => {
+        const option = document.createElement('option');
+        option.value = ward;
+        option.textContent = currentLang === 'hi' ? `वार्ड ${ward}` : `Ward ${ward}`;
+        wardSelect.appendChild(option);
       });
     }
+
+    // Setup all event listeners
+    function setupEventListeners() {
+      // Language toggle
+      document.getElementById('langToggle').addEventListener('click', toggleLanguage);
+      
+      // Ward selection
+      document.getElementById('wardSelect').addEventListener('change', handleWardSelection);
+      
+      // House selection
+      document.getElementById('houseSelect').addEventListener('change', handleHouseSelection);
+      
+      // Show voters button
+      document.getElementById('btnShow').addEventListener('click', showVoters);
+    }
+
+    // Toggle between English and Hindi
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'hi' : 'en';
+      document.getElementById('langToggle').textContent = currentLang === 'en' ? 'हिंदी' : 'English';
+      updateUI();
+    }
+
+    // Update all UI text based on current language
+    function updateUI() {
+      const t = texts[currentLang];
+      
+      // Update static texts
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('lblWard').textContent = t.lblWard;
+      document.getElementById('totalHousesLabel').textContent = t.totalHousesLabel;
+      document.getElementById('lblHouse').textContent = t.lblHouse;
+      document.getElementById('btnText').textContent = t.btnText;
+      document.getElementById('totalLabel').textContent = t.totalLabel;
+      
+      // Update ward dropdown options
+      const wardOptions = document.querySelectorAll('#wardSelect option');
+      wardOptions.forEach((option, index) => {
+        if (index > 0 && option.value) {
+          option.textContent = currentLang === 'hi' 
+            ? `वार्ड ${option.value}` 
+            : `Ward ${option.value}`;
+        }
+      });
+      
+      // Update house dropdown options
+      const houseOptions = document.querySelectorAll('#houseSelect option');
+      houseOptions.forEach((option, index) => {
+        if (index > 0 && option.value) {
+          option.textContent = currentLang === 'hi' 
+            ? `मकान ${option.value}` 
+            : `House ${option.value}`;
+        }
+      });
+      
+      // Update result header if showing
+      if (document.getElementById('result').style.display === 'block') {
+        const ward = document.getElementById('wardSelect').value;
+        const house = document.getElementById('houseSelect').value;
+        document.getElementById('resultHeader').textContent = t.resultHeader(ward, house || null);
+      }
+    }
+
+    // Handle ward selection
+    function handleWardSelection() {
+      const ward = document.getElementById('wardSelect').value;
+      const totalHousesSection = document.getElementById('totalHousesSection');
+      const selectHouseSection = document.getElementById('selectHouseSection');
+      const resultBox = document.getElementById('result');
+      
+      // Reset
+      document.getElementById('houseSelect').innerHTML = '<option value="">-- Select House --</option>';
+      totalHousesSection.style.display = 'none';
+      selectHouseSection.style.display = 'none';
+      resultBox.style.display = 'none';
+      
+      if (!ward) return;
+      
+      currentWard = parseInt(ward);
+      
+      // Get voters for this ward
+      const wardVoters = voterData.filter(voter => voter.Ward == currentWard);
+      
+      // Get unique house numbers
+      const houses = [...new Set(wardVoters.map(voter => voter.H_No))]
+        .filter(house => house != null)
+        .sort((a, b) => a - b);
+      
+      // Show total houses
+      document.getElementById('houseCountDisplay').textContent = houses.length;
+      totalHousesSection.style.display = 'block';
+      
+      // Populate house dropdown
+      if (houses.length > 0) {
+        const houseSelect = document.getElementById('houseSelect');
+        houses.forEach(house => {
+          const option = document.createElement('option');
+          option.value = house;
+          option.textContent = currentLang === 'hi' ? `मकान ${house}` : `House ${house}`;
+          houseSelect.appendChild(option);
+        });
+        selectHouseSection.style.display = 'block';
+      }
+    }
+
+    // Handle house selection
+    function handleHouseSelection() {
+      document.getElementById('result').style.display = 'none';
+    }
+
+    // Show voters based on selection
+    function showVoters() {
+      const ward = document.getElementById('wardSelect').value;
+      const house = document.getElementById('houseSelect').value;
+      const t = texts[currentLang];
+      const resultBox = document.getElementById('result');
+      
+      if (!ward) {
+        alert(t.selectWardFirst);
+        return;
+      }
+      
+      let voters = [];
+      let headerText = '';
+      
+      if (house) {
+        // Show voters for specific house
+        voters = voterData.filter(v => v.Ward == ward && v.H_No == house);
+        headerText = t.resultHeader(ward, house);
+      } else {
+        // Show all voters in ward
+        voters = voterData.filter(v => v.Ward == ward);
+        headerText = t.resultHeader(ward, null);
+      }
+      
+      // Update result display
+      document.getElementById('resultHeader').textContent = headerText;
+      document.getElementById('totalVoters').textContent = voters.length;
+      
+      const voterList = document.getElementById('voterList');
+      if (voters.length > 0) {
+        const nameField = currentLang === 'hi' ? 'Name_hi' : 'Name_en';
+        voterList.innerHTML = voters.map(voter => `
+          <div class="voter-item">
+            ${voter[nameField] || voter.Name || 'Unknown'} 
+            ${!house ? `(House: ${voter.H_No})` : ''}
+          </div>
+        `).join('');
+      } else {
+        voterList.innerHTML = `<div class="voter-item" style="text-align: center; color: #666;">${t.noVoters}</div>`;
+      }
+      
+      resultBox.style.display = 'block';
+    }
+
+    // Start the app
+    initApp();
   </script>
 </body>
 </html>
