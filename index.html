@@ -37,6 +37,7 @@
       color: white;
       padding: 25px;
       margin: -40px -20px 30px;
+      position: relative;
     }
     .header h1 {
       margin: 0;
@@ -61,14 +62,88 @@
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #3a56d4;
     }
     .error {
       color: #e74c3c;
       margin-top: 15px;
       font-weight: bold;
     }
+    select {
+      padding: 10px 15px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 300px;
+      margin: 10px 0;
+    }
+    .info-box {
+      background: #eef7ff;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      border-left: 4px solid var(--primary);
+    }
+    .result-box {
+      margin-top: 25px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    .voter-list {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 15px;
+      line-height: 1.6;
+      text-align: left;
+      border: 1px solid #eee;
+    }
+    .step {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f8f9fa;
+    }
+    .step-label {
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: block;
+    }
     .content, #mainApp { display: none; }
     .content.show, #mainApp.show { display: block; }
+    .lang-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .lang-toggle:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .total-display {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #2c3e50;
+      padding: 10px;
+      background: #e8f4ff;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
@@ -88,33 +163,44 @@
   <div class="container" id="mainApp">
     <div class="header">
       <h1 id="title">Ward-wise Voter Analysis</h1>
-      <button class="lang-toggle" id="langToggle" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold;">हिंदी</button>
+      <button class="lang-toggle" id="langToggle">हिंदी</button>
     </div>
 
     <div class="content">
-      <label id="lblWard">1. Select Ward:</label>
-      <select id="wardSelect">
-        <option value="">-- Select Ward --</option>
-      </select>
-
-      <div class="info-box" id="wardSummary" style="background: #eef7ff; padding: 14px; border-radius: 10px; margin: 15px 0; border-left: 4px solid var(--primary); display: none;">
-        <p><strong id="totalHousesLabel">Total Houses in this Ward:</strong> <span id="houseCount">0</span></p>
-        <p><strong id="totalVotersWardLabel">Total Voters in this Ward:</strong> <span id="voterCount">0</span></p>
+      <!-- Step 1: Select Ward -->
+      <div class="step">
+        <label class="step-label" id="lblWard">1. Select Ward:</label>
+        <select id="wardSelect">
+          <option value="">-- Select Ward --</option>
+        </select>
       </div>
 
-      <label id="lblHouse">2. Select House No.:</label>
-      <select id="houseSelect" disabled>
-        <option value="">-- Select House --</option>
-      </select>
+      <!-- Step 2: Total Houses (Auto-calculated) -->
+      <div class="step" id="totalHousesSection" style="display: none;">
+        <label class="step-label" id="totalHousesLabel">2. Total Houses in Selected Ward:</label>
+        <div class="total-display" id="houseCountDisplay">0</div>
+      </div>
 
-      <button id="btnShow" style="background: var(--primary); color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 15px;">
+      <!-- Step 3: Select House -->
+      <div class="step" id="selectHouseSection" style="display: none;">
+        <label class="step-label" id="lblHouse">3. Select House No.:</label>
+        <select id="houseSelect">
+          <option value="">-- Select House --</option>
+        </select>
+      </div>
+
+      <button id="btnShow" style="margin-top: 20px; width: 100%; max-width: 300px;">
         <i class="fas fa-search"></i> <span id="btnText">Show Voters</span>
       </button>
 
-      <div class="result" id="result" style="margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 12px; display: none;">
+      <!-- Results Section -->
+      <div class="result-box" id="result" style="display: none;">
         <h3><i class="fas fa-house-user"></i> <span id="resultHeader">Ward 1, House 1</span></h3>
-        <p><strong id="totalLabel">Total Voters:</strong> <span id="totalVoters">0</span></p>
-        <div class="voter-list" id="voterList" style="background: white; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; margin-top: 12px; line-height: 1.5;"></div>
+        <p><strong id="totalLabel">Total Voters in this House:</strong> <span id="totalVoters" style="font-size: 1.2em; color: var(--primary);">0</span></p>
+        
+        <div class="voter-list" id="voterList">
+          <!-- Voter names will appear here -->
+        </div>
       </div>
     </div>
   </div>
@@ -156,22 +242,24 @@
         en: {
           title: "Ward-wise Voter Analysis",
           lblWard: "1. Select Ward:",
-          lblHouse: "2. Select House No.:",
+          totalHousesLabel: "2. Total Houses in Selected Ward:",
+          lblHouse: "3. Select House No.:",
           btnText: "Show Voters",
-          totalHousesLabel: "Total Houses in this Ward:",
-          totalVotersWardLabel: "Total Voters in this Ward:",
-          totalLabel: "Total Voters:",
-          resultHeader: (w, h) => `Ward ${w}, House ${h}`
+          totalLabel: "Total Voters in this House:",
+          resultHeader: (w, h) => `Ward ${w}, House ${h}`,
+          selectWardFirst: "Please select a ward first",
+          noVoters: "No voters found in this house"
         },
         hi: {
           title: "वार्ड-वार मतदाता विश्लेषण",
           lblWard: "1. वार्ड चुनें:",
-          lblHouse: "2. मकान संख्या चुनें:",
+          totalHousesLabel: "2. चुने गए वार्ड में कुल मकान:",
+          lblHouse: "3. मकान संख्या चुनें:",
           btnText: "मतदाता देखें",
-          totalHousesLabel: "इस वार्ड में कुल मकान:",
-          totalVotersWardLabel: "इस वार्ड में कुल मतदाता:",
-          totalLabel: "कुल मतदाता:",
-          resultHeader: (w, h) => `वार्ड ${w}, मकान ${h}`
+          totalLabel: "इस मकान में कुल मतदाता:",
+          resultHeader: (w, h) => `वार्ड ${w}, मकान ${h}`,
+          selectWardFirst: "कृपया पहले एक वार्ड चुनें",
+          noVoters: "इस मकान में कोई मतदाता नहीं मिले"
         }
       };
 
@@ -180,25 +268,31 @@
 
       // Load voter data
       fetch('voters.json')
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to load voter data');
+          return res.json();
+        })
         .then(data => {
           allData = data;
           const wards = [...new Set(data.map(d => d.Ward))].sort((a,b) => a-b);
+          const wardSelect = document.getElementById('wardSelect');
           wards.forEach(w => {
             const opt = document.createElement('option');
             opt.value = w;
             opt.textContent = `Ward ${w}`;
-            document.getElementById('wardSelect').appendChild(opt);
+            wardSelect.appendChild(opt);
           });
           updateUI();
+        })
+        .catch(error => {
+          console.error('Error loading voter data:', error);
+          alert('Failed to load voter data. Please check if voters.json exists.');
         });
 
       // Language toggle
       document.getElementById('langToggle').addEventListener('click', () => {
         currentLang = currentLang === 'en' ? 'hi' : 'en';
         document.getElementById('langToggle').textContent = currentLang === 'en' ? 'हिंदी' : 'English';
-        if (currentLang === 'hi') document.body.style.fontFamily = "'Noto Sans Devanagari', sans-serif";
-        else document.body.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
         updateUI();
       });
 
@@ -206,67 +300,129 @@
         const t = texts[currentLang];
         document.getElementById('title').textContent = t.title;
         document.getElementById('lblWard').textContent = t.lblWard;
+        document.getElementById('totalHousesLabel').textContent = t.totalHousesLabel;
         document.getElementById('lblHouse').textContent = t.lblHouse;
         document.getElementById('btnText').textContent = t.btnText;
-        document.getElementById('totalHousesLabel').textContent = t.totalHousesLabel;
-        document.getElementById('totalVotersWardLabel').textContent = t.totalVotersWardLabel;
         document.getElementById('totalLabel').textContent = t.totalLabel;
 
+        // Update ward options
         const wardOpts = document.querySelectorAll('#wardSelect option');
         wardOpts.forEach((opt, i) => {
           if (i > 0) opt.textContent = currentLang === 'hi' ? `वार्ड ${opt.value}` : `Ward ${opt.value}`;
         });
 
+        // Update house options
         const houseOpts = document.querySelectorAll('#houseSelect option');
         houseOpts.forEach((opt, i) => {
           if (i > 0) opt.textContent = currentLang === 'hi' ? `मकान ${opt.value}` : `House ${opt.value}`;
         });
+
+        // Update result header if visible
+        const resultHeader = document.getElementById('resultHeader');
+        if (document.getElementById('result').style.display !== 'none') {
+          const ward = document.getElementById('wardSelect').value;
+          const house = document.getElementById('houseSelect').value;
+          if (ward && house) {
+            resultHeader.textContent = t.resultHeader(ward, house);
+          }
+        }
       }
 
-      // Ward selection
+      // Ward selection handler
       document.getElementById('wardSelect').addEventListener('change', () => {
         const ward = parseInt(document.getElementById('wardSelect').value);
+        const totalHousesSection = document.getElementById('totalHousesSection');
+        const selectHouseSection = document.getElementById('selectHouseSection');
+        const resultDiv = document.getElementById('result');
+        
+        // Reset everything if no ward selected
         if (!ward) {
-          document.getElementById('wardSummary').style.display = 'none';
-          document.getElementById('houseSelect').disabled = true;
+          totalHousesSection.style.display = 'none';
+          selectHouseSection.style.display = 'none';
+          resultDiv.style.display = 'none';
           document.getElementById('houseSelect').innerHTML = '<option value="">-- Select House --</option>';
-          document.getElementById('result').style.display = 'none';
           return;
         }
 
+        // Filter data for selected ward
         const wardVoters = allData.filter(d => d.Ward === ward);
         const houses = [...new Set(wardVoters.map(d => d.H_No))].sort((a,b) => a-b);
         
-        document.getElementById('houseCount').textContent = houses.length;
-        document.getElementById('voterCount').textContent = wardVoters.length;
-        document.getElementById('wardSummary').style.display = 'block';
+        // Display total houses
+        document.getElementById('houseCountDisplay').textContent = houses.length;
+        totalHousesSection.style.display = 'block';
 
-        document.getElementById('houseSelect').innerHTML = '<option value="">-- Select House --</option>';
+        // Populate house dropdown
+        const houseSelect = document.getElementById('houseSelect');
+        houseSelect.innerHTML = '<option value="">-- Select House --</option>';
+        
         houses.forEach(h => {
           const opt = document.createElement('option');
           opt.value = h;
           opt.textContent = currentLang === 'hi' ? `मकान ${h}` : `House ${h}`;
-          document.getElementById('houseSelect').appendChild(opt);
+          houseSelect.appendChild(opt);
         });
-        document.getElementById('houseSelect').disabled = false;
-        document.getElementById('result').style.display = 'none';
+        
+        selectHouseSection.style.display = 'block';
+        resultDiv.style.display = 'none';
       });
 
-      // Show voters
+      // Show voters button handler
       document.getElementById('btnShow').addEventListener('click', () => {
         const ward = parseInt(document.getElementById('wardSelect').value);
         const house = parseInt(document.getElementById('houseSelect').value);
         const t = texts[currentLang];
 
-        if (!ward || !house) return;
+        if (!ward) {
+          alert(t.selectWardFirst);
+          return;
+        }
 
-        const voters = allData.filter(d => d.Ward === ward && d.H_No === house);
-        const nameField = currentLang === 'hi' ? 'Name_hi' : 'Name_en';
+        if (!house) {
+          // If no house selected, show all voters in the ward
+          const wardVoters = allData.filter(d => d.Ward === ward);
+          const nameField = currentLang === 'hi' ? 'Name_hi' : 'Name_en';
+          
+          document.getElementById('resultHeader').textContent = currentLang === 'hi' 
+            ? `वार्ड ${ward} के सभी मतदाता` 
+            : `All Voters in Ward ${ward}`;
+          
+          document.getElementById('totalVoters').textContent = wardVoters.length;
+          
+          const voterList = document.getElementById('voterList');
+          if (wardVoters.length > 0) {
+            voterList.innerHTML = wardVoters.map(v => 
+              `<div style="padding: 8px; border-bottom: 1px solid #eee;">
+                <strong>${v[nameField]}</strong> (House: ${v.H_No})
+               </div>`
+            ).join('');
+          } else {
+            voterList.innerHTML = `<p style="color: #666; text-align: center;">${t.noVoters}</p>`;
+          }
+        } else {
+          // Show voters for specific house
+          const voters = allData.filter(d => d.Ward === ward && d.H_No === house);
+          const nameField = currentLang === 'hi' ? 'Name_hi' : 'Name_en';
 
-        document.getElementById('resultHeader').textContent = t.resultHeader(ward, house);
-        document.getElementById('totalVoters').textContent = voters.length;
-        document.getElementById('voterList').textContent = voters.map(v => v[nameField]).join(', ');
+          document.getElementById('resultHeader').textContent = t.resultHeader(ward, house);
+          document.getElementById('totalVoters').textContent = voters.length;
+          
+          const voterList = document.getElementById('voterList');
+          if (voters.length > 0) {
+            voterList.innerHTML = voters.map(v => 
+              `<div style="padding: 8px; border-bottom: 1px solid #eee;">${v[nameField]}</div>`
+            ).join('');
+          } else {
+            voterList.innerHTML = `<p style="color: #666; text-align: center;">${t.noVoters}</p>`;
+          }
+        }
+        
         document.getElementById('result').style.display = 'block';
+      });
+
+      // House selection handler
+      document.getElementById('houseSelect').addEventListener('change', () => {
+        document.getElementById('result').style.display = 'none';
       });
     }
   </script>
