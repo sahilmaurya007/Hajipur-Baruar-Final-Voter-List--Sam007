@@ -274,7 +274,7 @@
 
 <script>
 // Password for access (change this to your desired password)
-const ACCESS_PASSWORD = "1857"; // CHANGED TO 1857
+const ACCESS_PASSWORD = "1857";
 
 let currentLang = 'en';
 let allData = [];
@@ -405,6 +405,9 @@ function createSampleData() {
     "मोहन दास", "कविता नायर", "दीपक चौधरी", "स्वाति तिवारी", "रोहन मेहता"
   ];
 
+  // Create a counter to ensure unique names
+  let nameCounter = 0;
+
   for (let ward = 1; ward <= 11; ward++) {
     // Each ward has 10-15 houses (numbered 1-15)
     const numHouses = Math.floor(Math.random() * 6) + 10;
@@ -414,18 +417,23 @@ function createSampleData() {
       const numVoters = Math.floor(Math.random() * 5) + 1;
       
       for (let v = 1; v <= numVoters; v++) {
-        const nameIndex = (ward + houseNum + v) % voterNamesEn.length;
+        // Use modulo to cycle through names without going out of bounds
+        const nameIndex = nameCounter % voterNamesEn.length;
+        
         allData.push({
           Ward: ward,
-          H_No: houseNum.toString(), // Using simple house numbers (1, 2, 3...)
-          Name_en: voterNamesEn[nameIndex],
-          Name_hi: voterNamesHi[nameIndex]
+          H_No: houseNum.toString(),
+          Name_en: `Mr./Mrs. ${voterNamesEn[nameIndex]}`,
+          Name_hi: `श्री/श्रीमती ${voterNamesHi[nameIndex]}`
         });
+        
+        nameCounter++;
       }
     }
   }
   
   console.log('Sample data created:', allData.length, 'records');
+  console.log('Sample of data:', allData.slice(0, 5));
   populateWardDropdown();
 }
 
@@ -626,16 +634,19 @@ function showVoters() {
     return;
   }
   
-  // FIX: Convert h to string to match the data format
+  // Convert h to string to match the data format
   const houseStr = h.toString();
   const voters = allData.filter(d => d.Ward === w && d.H_No === houseStr);
+  
+  console.log(`Looking for voters in Ward ${w}, House ${houseStr}`);
+  console.log(`Found ${voters.length} voters:`, voters);
   
   resultHeader.textContent = texts[currentLang].resultHeader(w, h);
   totalVoters.textContent = voters.length;
   
   if (voters.length > 0) {
-    voterList.innerHTML = voters.map(v => 
-      `<div>• ${currentLang === 'hi' ? v.Name_hi : v.Name_en}</div>`
+    voterList.innerHTML = voters.map((v, index) => 
+      `<div>${index + 1}. ${currentLang === 'hi' ? v.Name_hi : v.Name_en}</div>`
     ).join('');
   } else {
     voterList.textContent = currentLang === 'hi' ? 'कोई मतदाता नहीं मिला' : 'No voters found';
